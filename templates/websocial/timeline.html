@@ -1,0 +1,131 @@
+{% extends 'websocial/base.html' %}
+{% block body %}
+<div class="page-header">
+    <h2>{{title}}</h2>
+</div>
+
+{% if status_form %}
+    {% if status_form.errors %}
+    <div class="alert alert-danger" role="alert">
+    {{ status_form.non_field_errors }}
+    {{ status_form.text.errors}}
+    </div>
+    {% endif %}
+    
+    <div class="input-group">
+        <span class="input-group-addon" id="basic-addon1">Status: </span>
+        <form method="post" action="/user/{{ user_id }}/timeline/">
+    	<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token}}"/>
+            {{ status_form.text }}
+        </form>
+    </div>
+    <br/>
+{% endif %}
+
+<div class="list-group" id="timeline">
+{% for entry in entries %}
+    <div class="list-group-item" id="status{{entry.id}}">
+    <h4 class="list-group-item-heading">{{ entry.user.name }}</h4>
+    <p class="list-group-item-text">{{entry.text}}</p>
+    <p class="list-group-item-text">
+        <a href="{{ entry.url }}">[link]</a>
+	<a href="#" id="toggleFollow{{entry.user.id}}" user_id="{{entry.user.id}}">[follow]</a>
+    </p>
+    </div>
+
+{% endfor %}
+</div>
+{% endblock %}
+
+{% block bodyscripts %}
+<script type="text/javascript">
+	var poll_url = "{{ poll_url }}";
+	var csrf_token = "{{ csrf_token }}";
+	var own_user_id = {{user.id}};
+	function statusHtml(status){
+    		return '' +
+        		'<div class="list-group-item" id="status' + status['id'] + '" style="display: none;">' +
+        		'<h4 class="list-group-item-heading">' + status['user_name'] + '</h4>' +
+        		'<p class="list-group-item-text">' + status['text'] + '</p>' +
+			'<p class="list-group-item-text">' +
+			    '<a href="' + status['url'] + '">[link]</a>' + 
+			    '<a href="#" id="toggleFollow' + status['user_id'] + '" user_id="' + status['user_id'] + '">[follow]</a>' +
+			'</p>' +
+        		'</div>';
+	}
+
+	function updateFollowing(followeeId, following){
+		$('a[id=toggleFollow' + followeeId + ']').each(function(){
+			$(this).html(following? '[following]' : '[follow]');	
+		});
+	}
+
+	function toggleFollowing(){
+		var following = $(this).html() == '[following]';
+		var followeeId = $(this).attr('user_id');
+		var verb = following? 'DELETE' : 'PUT';
+		$.ajax({
+			"url": "/user/" + own_user_id + "/following/user/" + followeeId + "/", 
+			"method": verb, 
+			"data": {"csrfmiddlewaretoken": csrf_token}, 
+			"success": function(responseBody){  
+				updateFollowing(followeeId, responseBody['following']);
+			}
+		});
+		return false;
+	}
+
+	function initFollowing(){
+		var idsDone = [];
+		$("a[id^=toggleFollow]:not(.followArmed)").each(function(){ 
+			var followeeId = $(this).attr('user_id');
+			console.log('followeeId: ' + followeeId + ', idsDone: ' + idsDone);
+			if ($.inArray(followeeId, idsDone) === -1){
+				console.log('updating following for ' + followeeId);
+				idsDone.push(followeeId);
+				$.ajax({
+					"url": "/user/" + own_user_id + "/following/user/" + followeeId + "/", 
+					"method": "GET", 
+					"success": function(responseBody){  
+						updateFollowing(followeeId, responseBody['following']);
+					}
+				});
+			}
+		});
+		armFollowLinks();
+	}
+
+	function armFollowLinks(){
+		$("a[id^=toggleFollow]:not(.followArmed)").each(function(){
+			$(this).click(toggleFollowing);
+			$(this).addClass('followArmed');
+		});
+	}
+
+	function addStatuses(statuses){
+		if (statuses.length == 0){
+			return;
+		}
+		for (var i = statuses.length - 1; i >= 0; i--){
+			var status = statuses[i];
+			var domId = "#status" + status["id"];
+			if (!($(domId).length)){
+				$("#timeline").prepend(statusHtml(status));
+				$(domId).fadeIn('slow');
+			}
+		}
+		initFollowing();
+	}
+
+	function pollTimeline(){
+		$.getJSON(poll_url, addStatuses);
+	}
+	
+	
+	window.setInterval(pollTimeline, 10000);
+	$(document).ready(function(){
+		initFollowing();
+		$('#text_input').focus();
+	});
+</script>
+{% endblock %}

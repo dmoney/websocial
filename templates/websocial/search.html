@@ -1,0 +1,120 @@
+{% extends 'websocial/base.html' %}
+{% block body %}
+<div class="page-header">
+    <h2>{{title}}</h2>
+</div>
+
+    {% if search_form.errors %}
+    <div class="alert alert-danger" role="alert">
+    {{ search_form.errors}}
+    </div>
+    {% endif %}
+    
+    <form method="get" action="/search/">
+        <div class="input-group">
+	    {{ search_form.q }}
+            <span class="input-group-addon" id="basic-addon2">Search</span>
+        </div>
+    </form>
+
+   {% if valid_url %}
+   <br>
+   <a href="#" id="followUrl" url="{{query}}">[Follow '{{query}}']</a>
+   <br>
+   {% endif %}   
+
+    <br/>
+
+    {% if users %}
+    Search results for '{{ query }}':
+<div class="list-group" id="timeline">
+{% for user in users %}
+<div class="list-group-item" id="{{user.id}}">
+	<h4 class="list-group-item-heading">{{ user.name }} ({{ user.nick }})</h4>
+    {% if user.remote %}
+    <p class="list-group-item-text">{{user.url}}</p>
+    {% endif %}
+    <p class="list-group-item-text">
+    <a href="/user/{{user.id}}/">[link]</a>
+	<a href="#" id="toggleFollow{{user.id}}" user_id="{{user.id}}">[follow]</a>
+    </p>
+    </div>
+
+{% endfor %}
+</div>
+    {% else %}
+	No results for '{{query}}'.
+    {% endif %}
+{% endblock %}
+
+{% block bodyscripts %}
+<script type="text/javascript">
+	var csrf_token = "{{ csrf_token }}";
+	var own_user_id = {{user.id}};
+
+	function updateFollowing(followeeId, following){
+		$('a[id=toggleFollow' + followeeId + ']').each(function(){
+			$(this).html(following? '[following]' : '[follow]');	
+		});
+	}
+
+	function toggleFollowing(){
+		var following = $(this).html() == '[following]';
+		var followeeId = $(this).attr('user_id');
+		var verb = following? 'DELETE' : 'PUT';
+		$.ajax({
+			"url": "/user/" + own_user_id + "/following/user/" + followeeId + "/", 
+			"method": verb, 
+			"data": {"csrfmiddlewaretoken": csrf_token}, 
+			"success": function(responseBody){  
+				updateFollowing(followeeId, responseBody['following']);
+			}
+		});
+		return false;
+	}
+
+	function initFollowing(){
+		var idsDone = [];
+		$("a[id^=toggleFollow]:not(.followArmed)").each(function(){ 
+			var followeeId = $(this).attr('user_id');
+			console.log('followeeId: ' + followeeId + ', idsDone: ' + idsDone);
+			if ($.inArray(followeeId, idsDone) === -1){
+				console.log('updating following for ' + followeeId);
+				idsDone.push(followeeId);
+				$.ajax({
+					"url": "/user/" + own_user_id + "/following/user/" + followeeId + "/", 
+					"method": "GET", 
+					"success": function(responseBody){  
+						updateFollowing(followeeId, responseBody['following']);
+					}
+				});
+			}
+		});
+		armFollowLinks();
+	}
+
+	function armFollowLinks(){
+		$("a[id^=toggleFollow]:not(.followArmed)").each(function(){
+			$(this).click(toggleFollowing);
+			$(this).addClass('followArmed');
+		});
+
+		$("a[id=followUrl]").click(function(){
+			$.ajax({
+				'method': 'POST',
+				'url': '/user/{{user.id}}/following/',
+				'data': {'url': $(this).attr('url')},
+				'success': function(response){
+					window.location.href="/user/" + response['user_id'] + "/";
+				}
+			});
+			$(this).addClass('followArmed');
+		});
+	}
+	
+	$(document).ready(function(){
+		initFollowing();
+		$('#query_input').focus();
+	});
+</script>
+{% endblock %}
