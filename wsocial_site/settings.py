@@ -23,7 +23,7 @@ SECRET_KEY = '5ysaa&tb=9j78yb7$-mtr2%7%yxs%-%chnob06#u9!_+jbq%9j'
 DEBUG = True
 
 TEMPLATE_DEBUG = True
-TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
+#TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 
 # Error message said to add this.  Copied from a fresh settings.py.
 TEMPLATES = [
@@ -39,6 +39,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
             ],
         },
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
     },
 ]
 

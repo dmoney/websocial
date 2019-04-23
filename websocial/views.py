@@ -35,9 +35,9 @@ def timeline(request, user_id):
     title = "%s: Home" % user.name
     entries = _timeline_entries(user)
     return HttpResponse(render(request, 'websocial/timeline.html', {
-        'title': title, 
-        'entries': entries, 
-        'user_id': user.id, 
+        'title': title,
+        'entries': entries,
+        'user_id': user.id,
         'status_form': form,
         'poll_url': '/user/%d/timeline/json/' % user.id}))
 
@@ -46,11 +46,11 @@ def timeline_json(request, user_id):
     user = User.objects.get(pk=int(user_id))
     entries = _timeline_entries(user)
     entries_dicts = [{
-            'id': entry.id, 
-            'text': entry.text, 
-            'url': entry.url, 
-            'user_name': entry.user.name, 
-            'user_id': entry.user.id} 
+            'id': entry.id,
+            'text': entry.text,
+            'url': entry.url,
+            'user_name': entry.user.name,
+            'user_id': entry.user.id}
         for entry in entries]
     return JsonResponse(entries_dicts, safe=False)
 
@@ -59,15 +59,15 @@ def user_statuses_json(request, user_id):
     user = User.objects.get(pk=int(user_id))
     entries = user.status_set.all()[:100]
     entries_dicts = [{
-            'id': entry.id, 
-            'text': entry.text, 
-            'url': entry.url, 
-            'user_name': entry.user.name, 
-            'user_id': entry.user.id} 
+            'id': entry.id,
+            'text': entry.text,
+            'url': entry.url,
+            'user_name': entry.user.name,
+            'user_id': entry.user.id}
         for entry in entries]
     return JsonResponse(entries_dicts, safe=False)
 
-   
+
 
 from django.views.decorators.csrf import csrf_exempt
 
@@ -88,7 +88,7 @@ def user_following_user(request, follower_user_id, followee_user_id):
     return JsonResponse(content, status=status)
 
 def _logged_in_user(request):
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         return None
     return User.objects.get(local_user=request.user)
 
@@ -107,23 +107,23 @@ def user_statuses(request, user_id):
     else:
         logged_in_id = None
     return HttpResponse(render(request, 'websocial/timeline.html', {
-        'title': title, 
+        'title': title,
         'entries': entries,
         'user_id': logged_in_id,
         'poll_url': '/user/%d/status/json/' % user.id}))
 
 class StatusForm(forms.Form):
-    text = forms.CharField(max_length=140, widget=forms.TextInput(attrs={ 
+    text = forms.CharField(max_length=140, widget=forms.TextInput(attrs={
         "id": "text_input",
-        "class": "form-control", 
-        "placeholder": "Sup?", 
+        "class": "form-control",
+        "placeholder": "Sup?",
         "aria-describedby": "basic-addon1"}))
 
 class SearchForm(forms.Form):
-    q = forms.CharField(max_length=256, required=False, widget=forms.TextInput(attrs={ 
+    q = forms.CharField(max_length=256, required=False, widget=forms.TextInput(attrs={
         "id": "query_input",
-        "class": "form-control", 
-        "placeholder": "RSS/Atom URL or User", 
+        "class": "form-control",
+        "placeholder": "RSS/Atom URL or User",
         "aria-describedby": "basic-addon2"}))
 
 __validate = URLValidator()
@@ -139,7 +139,7 @@ def _search_users(query):
     local_users = User.objects.filter(nick__icontains=query)
     name_users = User.objects.filter(name__icontains=query)
     return (rss_users | local_users | name_users)[:10]
- 
+
 
 def search(request):
     query = request.GET.get('q', '')
@@ -150,7 +150,7 @@ def search(request):
     return render(request, 'websocial/search.html', {
         'query': query,
         'valid_url': _valid_url(query),
-        'users': _search_users(query), 
+        'users': _search_users(query),
         'search_form': search_form})
 
 def search_json(request, query):
