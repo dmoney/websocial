@@ -21,18 +21,18 @@ class User(models.Model):
         return self.following.all()
 
 class Profile(models.Model):
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField()
 
     def __str__(self):
         return str(self.user) + "'s Profile"
 
 class Status(models.Model):
-    user = models.ForeignKey(User, null=False)
+    user = models.ForeignKey(User, null=False, on_delete=models.CASCADE)
     url = models.URLField(max_length=256, null=True, blank=True)
     text = models.TextField()
-    re_status = models.ForeignKey('Status', related_name='re', null=True, blank=True)
-    shares_status = models.ForeignKey('Status', related_name='shares', null=True, blank=True)
+    re_status = models.ForeignKey('Status', related_name='re', null=True, blank=True, on_delete=models.SET_NULL)
+    shares_status = models.ForeignKey('Status', related_name='shares', null=True, blank=True, on_delete=models.SET_NULL)
     pub_date = models.DateTimeField(null=False)
     remote = models.BooleanField(null=False, default=False)
 
