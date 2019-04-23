@@ -5,7 +5,7 @@ from websocial import views, rssfeed
 
 #urlpatterns = patterns('',
 urlpatterns = [
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
     url(r'^user/(?P<user_id>\d+)/timeline/$', views.timeline),
     url(r'^user/(?P<user_id>\d+)/timeline/json/$', views.timeline_json),
     url(r'^user/(?P<user_id>\d+)/$', views.user_statuses),
