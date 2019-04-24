@@ -39,6 +39,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
             ],
         },
+        #Replaces top level settings.TEMPLATE_DIR :shrug:
         'DIRS': [os.path.join(BASE_DIR, 'templates')],
     },
 ]
