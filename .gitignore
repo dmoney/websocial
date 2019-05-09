@@ -4,3 +4,4 @@ __pycache__
 *.pyc
 .settings.py
 *.swp
+db.sqlite3
