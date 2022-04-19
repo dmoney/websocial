@@ -5,3 +5,4 @@ __pycache__
 .settings.py
 *.swp
 db.sqlite3
+.venv
