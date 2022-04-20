@@ -17,10 +17,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '5ysaa&tb=9j78yb7$-mtr2%7%yxs%-%chnob06#u9!_+jbq%9j'
+# Set this in local_settings.py
+SECRET_KEY = None
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 TEMPLATE_DEBUG = True
 #TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
@@ -127,3 +128,9 @@ STATICFILES_DIRS = (
 
 # used for links in RSS/ATOM feeds
 BASE_URL = 'http://localhost:8000/'
+
+# Server/host-specific overrides.
+try:
+    from .local_settings import *
+except:
+    raise
