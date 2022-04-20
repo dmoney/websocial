@@ -8,7 +8,7 @@ Disclaimer: WebSocial is currently in prototype status, and needs a new name, as
 
 **To install library dependencies** (assumes [Python 3.6+](https://www.python.org/downloads/) and [Pip](https://pip.pypa.io/en/stable/installing/) are already installed):
 
-    pip3 install -r requirements.txt
+    python3 -m pip install -r requirements.txt
 
 **To create the development database**:
 
